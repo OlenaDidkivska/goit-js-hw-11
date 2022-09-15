@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const BASE_URL = 'https://pixabay.com';
-export async function fetchPhoto(title) {
+export async function fetchPhoto(title, page) {
   try {
     const response = await axios.get(
       `${BASE_URL}/api/?key=29843828-e519b5089d649383ab6008921`,
@@ -12,6 +12,7 @@ export async function fetchPhoto(title) {
           orientation: 'horizontal',
           safesearch: true,
           per_page: 40,
+          page: `${page}`,
         },
       }
     );
