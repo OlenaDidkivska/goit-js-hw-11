@@ -1,0 +1,33 @@
+.search-form {
+    display: flex;
+    justify-content: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #904fda 86%;
+}
+
+input {
+    height: 35px;
+    min-width: 280px;
+    border: 1px solid #5908b6;
+    border-radius: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+
+    &:focus {
+            outline: none;
+        }
+}
+
+button {
+    border: 1px solid #5908b6;
+    border-radius: 8px;
+    color: #5908b6;
+}
+
+button:focus,
+button:hover{
+    background-color: #1001202f;
+    color: #ffffff;
+}
