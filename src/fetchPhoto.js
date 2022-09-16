@@ -16,7 +16,7 @@ export async function fetchPhoto(title, page) {
         },
       }
     );
-    const photoItems = response.data;
+    const photoItems = response;
     console.log(`GET: Here's the list of todos`, photoItems);
     return photoItems;
   } catch (errors) {

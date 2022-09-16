@@ -1,4 +1,6 @@
-import SimpleLightbox from 'simplelightbox';
+import throttle from 'lodash.throttle';
+
+import SimpleLightbox from 'simplelightbox/dist/simple-lightbox.esm';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const axios = require('axios');
@@ -8,16 +10,15 @@ import Notiflix from 'notiflix';
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('div.gallery');
 const info = document.querySelectorAll('.gallery .info');
-const loadMoreBtn = document.querySelector('.load-more');
+const request = document.querySelector('input');
 
 let page = 1;
 
 async function onSearchBtn(e) {
   e.preventDefault();
-  const inputEl = e.target.elements.searchQuery.value;
 
-  if (inputEl) {
-    fetchPhoto(inputEl, page)
+  if (request.value) {
+    fetchPhoto(request.value, page)
       .then(renderPhotoCard)
       .catch(error => {
         console.log(error);
@@ -28,9 +29,12 @@ async function onSearchBtn(e) {
   }
 }
 
-async function renderPhotoCard(photo) {
-  const images = photo.hits;
-  if (photo.hits.length === 0) {
+async function renderPhotoCard(response) {
+  const images = response.data.hits;
+  console.log(response);
+  console.log(images);
+
+  if (images.length === 0) {
     onFetchError();
   }
 
@@ -60,11 +64,10 @@ async function renderPhotoCard(photo) {
     ''
   );
 
-  gallery.innerHTML = marcup;
+  gallery.insertAdjacentHTML('beforeend', marcup);
 
   if (marcup !== '') {
-    page += 1;
-    console.log(page);
+    // console.log(page);
     Notiflix.Notify.info(`Hooray! We found ${photo.totalHits} images.`);
     gallery.innerHTML = await marcup;
     let lightbox = new SimpleLightbox('.gallery a', {
@@ -93,19 +96,49 @@ function scrollBy() {
   });
 }
 
-// function checkPosition() {
-//   const height = document.body.offsetHeight;
-//   const screenHeight = window.innerHeight;
-//   const scrolled = window.scrollY;
-//   const threshold = height - screenHeight / 4;
-//   const position = scrolled + screenHeight;
+info.forEach(element => (element.style.display = 'flex'));
 
-//   if (position >= threshold) {
-//     fetchPhoto();
+// function onScroll() {
+//   scrollBy();
+//   if (
+//     window.scrollY + window.innerHeight >=
+//     document.documentElement.scrollHeight
+//   ) {
+//     fetchPhoto(request.value, page).then(response => {
+//       if (response.hits.length === 0) {
+//         Notify.warning('You have reached the end of the list');
+//         window.removeEventListener('scroll', onScroll);
+//         return;
+//       } else {
+//         renderPhotoCard(response);
+//       }
+//     });
 //   }
 // }
 
-info.forEach(element => (element.style.display = 'flex'));
+// function loadMore() {
+//   return pixabayAPI.fetchImages(searchParams);
+// }
+
+async function checkPosition() {
+  page += 1;
+  if (
+    window.scrollY + window.innerHeight >=
+    document.documentElement.scrollHeight
+  ) {
+    fetchPhoto(request.value, page).then(response => {
+      console.log(response.hits);
+      if (response.data.hits.length === 0) {
+        window.removeEventListener('scroll', checkPosition);
+        Notify.warning('You have reached the end of the list');
+        return;
+      } else {
+        renderPhotoCard(response);
+        scrollBy();
+      }
+    });
+  }
+}
 
 form.addEventListener('submit', onSearchBtn);
-loadMoreBtn.addEventListener('click', onLoadMore);
+window.addEventListener('scroll', throttle(checkPosition, 300));
