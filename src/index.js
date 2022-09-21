@@ -117,6 +117,8 @@ function scrollBy() {
     top: cardHeight * 2,
     behavior: 'smooth',
   });
+
+  return;
 }
 
 form.addEventListener('submit', onSearchBtn);
@@ -130,7 +132,6 @@ function onFetchError() {
 }
 
 function reachedTheEnd(photo) {
-  console.log(photo);
   if (page * perPage > photo.totalHits) {
     Notiflix.Notify.warning(
       "We're sorry, but you've reached the end of search results."
