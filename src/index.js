@@ -3,7 +3,8 @@ import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox/dist/simple-lightbox.esm';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchPhoto } from './fetchPhoto';
-import throttle from 'lodash.throttle';
+
+document.cookie = 'Lax';
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -14,22 +15,25 @@ const refs = {
 const { form, gallery, request } = refs;
 
 let page = 1;
+const perPage = 40;
 
 async function onSearchBtn(e) {
   e.preventDefault();
+  gallery.textContent = '';
 
   if (!request.value) {
-    gallery.textContent = '';
     onFetchError();
     return;
   }
 
-  fetchPhoto(request.value, page)
+  fetchPhoto(request.value, page, perPage)
     .then(renderPhotoCard)
     .then(notificationTotalHits)
     .catch(error => {
       console.log(error);
     });
+
+  return;
 }
 
 function notificationTotalHits(photo) {
@@ -85,23 +89,23 @@ function onScroll() {
     window.scrollY + window.innerHeight >=
     document.documentElement.scrollHeight
   ) {
-    fetchPhoto(request.value, page)
+    fetchPhoto(request.value, page, perPage)
       .then(checkPhotoList)
+      .then(reachedTheEnd)
       .catch(error => {
         console.log(error);
       });
   }
+
+  return;
 }
 
 function checkPhotoList(images) {
-  if (images.hits.length === 0) {
-    Notify.warning('You have reached the end of the list');
-    window.removeEventListener('scroll', onScroll);
-    return;
-  } else {
+  if (images.hits.length !== 0) {
     renderPhotoCard(images);
     scrollBy();
   }
+  return images;
 }
 
 function scrollBy() {
@@ -123,4 +127,15 @@ function onFetchError() {
     'Sorry, there are no images matching your search query. Please try again.'
   );
   return;
+}
+
+function reachedTheEnd(photo) {
+  console.log(photo);
+  if (page * perPage > photo.totalHits) {
+    Notiflix.Notify.warning(
+      "We're sorry, but you've reached the end of search results."
+    ),
+      window.removeEventListener('scroll', onScroll);
+    return;
+  }
 }
