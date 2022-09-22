@@ -26,7 +26,7 @@ async function onSearchBtn(e) {
     return;
   }
 
-  fetchPhoto(request.value, page, perPage)
+  fetchPhoto(request.value, (page = 1), perPage)
     .then(renderPhotoCard)
     .then(notificationTotalHits)
     .catch(error => {
